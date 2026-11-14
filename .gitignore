@@ -1,0 +1,6 @@
+﻿node_modules/
+test-results/
+playwright-report/
+reportes/html/
+README_backup_*.md
+respaldo_tests_*/

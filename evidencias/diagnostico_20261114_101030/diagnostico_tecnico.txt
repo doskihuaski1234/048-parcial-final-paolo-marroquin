@@ -1,0 +1,305 @@
+﻿**********************
+Inicio de la transcripción de Windows PowerShell
+Hora de inicio: 20261114101031
+Nombre de usuario: ALEX\PAOLO
+Usuario RunAs: ALEX\PAOLO
+Nombre de la configuración: 
+Máquina: ALEX (Microsoft Windows NT 10.0.26300.0)
+Aplicación host: C:\WINDOWS\System32\WindowsPowerShell\v1.0\powershell.exe -noexit -command try { . "c:\Users\libre\AppData\Local\Programs\Microsoft VS Code\69047191fc\resources\app\out\vs\workbench\contrib\terminal\common\scripts\shellIntegration.ps1" } catch {}
+Id. de proceso: 20416
+PSVersion: 5.1.26100.9818
+PSEdition: Desktop
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1.26100.9818
+BuildVersion: 10.0.26100.9818
+CLRVersion: 4.0.30319.42000
+WSManStackVersion: 3.0
+PSRemotingProtocolVersion: 2.3
+SerializationVersion: 1.1.0.1
+**********************
+La transcripción ha comenzado. El archivo de salida es C:\Users\libre\OneDrive\Imágenes\Escritorio\048-parcial-final-paolo-marroquin\buggy-cars-testing\evidencias\diagnostico_20261114_101030\diagnostico_tecnico.txt
+
+==================================================
+ EVIDENCIAS DEL PARCIAL FINAL - BUGGY CARS RATING
+==================================================
+
+FECHA: 11/14/2026 10:10:31
+PROYECTO: C:\Users\libre\OneDrive\Imágenes\Escritorio\048-parcial-final-paolo-marroquin\buggy-cars-testing
+
+========== 1. VERSIONES Y DEPENDENCIAS ==========
+
+NODE:
+
+
+NPM:
+
+
+DEPENDENCIAS:
+
+
+========== 2. CONFIGURACION ==========
+
+[ENCONTRADO] package.json
+{
+  "name": "buggy-cars-testing",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "npx playwright test",
+    "test:smoke": "npx playwright test tests/smoke",
+    "test:functional": "npx playwright test tests/functional",
+    "test:regression": "npx playwright test tests/regression",
+    "report": "npx playwright show-report reportes/html"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@playwright/test": "^1.65.1",
+    "@types/node": "^26.6.6",
+    "ts-node": "^10.9.2",
+    "typescript": "^7.0.2"
+  }
+}
+
+[ENCONTRADO] package-lock.json
+Archivo de dependencias presente.
+
+[ENCONTRADO] tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "commonjs",
+    "strict": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "outDir": "dist",
+    "types": ["node", "@playwright/test"],
+    "skipLibCheck": true
+  },
+  "include": [
+    "tests/**/*.ts",
+    "pages/**/*.ts",
+    "fixtures/**/*.ts",
+    "utils/**/*.ts"
+  ]
+}
+
+[ENCONTRADO] playwright.config.ts
+import { defineConfig, devices } from '@playwright/test';
+
+export default defineConfig({
+  testDir: './tests',
+  fullyParallel: true,
+  forbidOnly: !!process.env.CI,
+  retries: process.env.CI ? 2 : 0,
+  workers: process.env.CI ? 2 : undefined,
+  reporter: [
+    ['list'],
+    ['html', { outputFolder: 'reportes/html', open: 'never' }]
+  ],
+  use: {
+    baseURL: 'https://buggy.justtestit.org/',
+    trace: 'retain-on-failure',
+    screenshot: 'only-on-failure',
+    video: 'retain-on-failure'
+  },
+  projects: [
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] }
+    },
+    {
+      name: 'firefox',
+      use: { ...devices['Desktop Firefox'] }
+    },
+    {
+      name: 'webkit',
+      use: { ...devices['Desktop Safari'] }
+    }
+  ]
+});
+
+========== 3. CASOS AUTOMATIZADOS ==========
+[OK] tests\functional\TC-AUT-01-password-mismatch.spec.ts
+import { test, expect } from '@playwright/test';
+
+test('TC-AUT-01 - El registro impide contraseñas diferentes', async ({ page }) => {
+  await page.goto('/register');
+
+  await page.getByLabel(/^login$/i).fill('qa_mismatch_2026');
+  await page.getByLabel(/^first name$/i).fill('QA');
+  await page.getByLabel(/^last name$/i).fill('Tester');
+  await page.getByLabel(/^password$/i).fill('Abc@123');
+  await page.getByLabel(/^confirm password$/i).fill('Xyz@456');
+
+  await page.getByRole('button', { name: /^register$/i }).click();
+
+  await expect(
+    page.getByText(/passwords?.*(do not match|don't match)|password.*match/i)
+  ).toBeVisible();
+});
+[OK] tests\functional\TC-AUT-02-valid-password.spec.ts
+import { test, expect } from '@playwright/test';
+
+test('TC-AUT-02 - Registro con contraseña valida de seis caracteres', async ({ page }) => {
+  await page.goto('/register');
+
+  const uniqueUser = `qa${Date.now()}`;
+
+  // Seis caracteres: A, b, c, @, 1, 2
+  const password = 'Abc@12';
+
+  await page.getByLabel(/^login$/i).fill(uniqueUser);
+  await page.getByLabel(/^first name$/i).fill('QA');
+  await page.getByLabel(/^last name$/i).fill('Tester');
+  await page.getByLabel(/^password$/i).fill(password);
+  await page.getByLabel(/^confirm password$/i).fill(password);
+
+  await page.getByRole('button', { name: /^register$/i }).click();
+
+  await expect(
+    page.getByText(/registration is successful|registration successful/i)
+  ).toBeVisible();
+});
+[OK] tests\functional\TC-AUT-03-vote-without-login.spec.ts
+import { test, expect } from '@playwright/test';
+
+test('TC-AUT-03 - El sitio solicita iniciar sesion para votar', async ({ page }) => {
+  await page.goto('/');
+
+  // Seleccionar el primer automóvil de Overall Rating
+  const firstCar = page.locator('tbody tr').first().getByRole('link').first();
+
+  await expect(firstCar).toBeVisible();
+  await firstCar.click();
+
+  // Intentar votar sin autenticarse
+  await page.getByRole('button', { name: /vote/i }).click();
+
+  // Verificar el mensaje de autenticación requerida
+  await expect(
+    page.getByText(/log in|logged in|login|sign in/i)
+  ).toBeVisible();
+});
+
+========== 4. PAGE OBJECTS ==========
+
+--- home.page.ts ---
+import { Page, expect } from '@playwright/test';
+
+export class HomePage {
+  constructor(private readonly page: Page) {}
+
+  async open() {
+    const response = await this.page.goto('/');
+
+    expect(response).not.toBeNull();
+    expect(response!.status()).toBeLessThan(400);
+  }
+
+  async goToRegistration() {
+    await this.page.getByRole('link', { name: /^register$/i }).click();
+  }
+}
+
+--- login.page.ts ---
+import { Page } from '@playwright/test';
+
+export class LoginPage {
+  constructor(private readonly page: Page) {}
+
+  async login(username: string, password: string) {
+    await this.page.getByLabel(/^login$/i).fill(username);
+    await this.page.getByLabel(/^password$/i).fill(password);
+    await this.page.getByRole('button', { name: /^login$/i }).click();
+  }
+
+  get loginButton() {
+    return this.page.getByRole('button', { name: /^login$/i });
+  }
+
+  get logoutLink() {
+    return this.page.getByRole('link', { name: /logout/i });
+  }
+}
+
+--- registration.page.ts ---
+import { Page } from '@playwright/test';
+
+export class RegistrationPage {
+  constructor(private readonly page: Page) {}
+
+  get loginField() {
+    return this.page.getByLabel(/^login$/i);
+  }
+
+  get firstNameField() {
+    return this.page.getByLabel(/^first name$/i);
+  }
+
+  get lastNameField() {
+    return this.page.getByLabel(/^last name$/i);
+  }
+
+  get passwordField() {
+    return this.page.getByLabel(/^password$/i);
+  }
+
+  get confirmPasswordField() {
+    return this.page.getByLabel(/^confirm password$/i);
+  }
+}
+
+========== 5. DOCUMENTACION ==========
+
+RUTA: .\documentacion
+
+RUTA: .\tests
+
+
+========== 6. COMPILACION TYPESCRIPT ==========
+PS>CommandInvocation(Out-Null): "Out-Null"
+[OK] TypeScript sin errores.
+
+========== 7. DETECCION DE PRUEBAS ==========
+Listing tests:
+  [chromium] › functional\TC-AUT-01-password-mismatch.spec.ts:3:1 › TC-AUT-01 - El registro impide contraseñas diferentes
+  [chromium] › functional\TC-AUT-02-valid-password.spec.ts:3:1 › TC-AUT-02 - Registro con contraseña valida de seis caracteres
+  [chromium] › functional\TC-AUT-03-vote-without-login.spec.ts:3:1 › TC-AUT-03 - El sitio solicita iniciar sesion para votar
+  [firefox] › functional\TC-AUT-01-password-mismatch.spec.ts:3:1 › TC-AUT-01 - El registro impide contraseñas diferentes
+  [firefox] › functional\TC-AUT-02-valid-password.spec.ts:3:1 › TC-AUT-02 - Registro con contraseña valida de seis caracteres
+  [firefox] › functional\TC-AUT-03-vote-without-login.spec.ts:3:1 › TC-AUT-03 - El sitio solicita iniciar sesion para votar
+  [webkit] › functional\TC-AUT-01-password-mismatch.spec.ts:3:1 › TC-AUT-01 - El registro impide contraseñas diferentes
+  [webkit] › functional\TC-AUT-02-valid-password.spec.ts:3:1 › TC-AUT-02 - Registro con contraseña valida de seis caracteres
+  [webkit] › functional\TC-AUT-03-vote-without-login.spec.ts:3:1 › TC-AUT-03 - El sitio solicita iniciar sesion para votar
+Total: 9 tests in 3 files
+
+========== 8. INVENTARIO DE EVIDENCIAS ==========
+
+.\evidencias
+
+.\reportes
+FullName
+--------
+C:\Users\libre\OneDrive\Imágenes\Escritorio\048-parcial-fi...
+C:\Users\libre\OneDrive\Imágenes\Escritorio\048-parcial-fi...
+C:\Users\libre\OneDrive\Imágenes\Escritorio\048-parcial-fi...
+C:\Users\libre\OneDrive\Imágenes\Escritorio\048-parcial-fi...
+[NO EXISTE] .\test-results
+[NO EXISTE] .\playwright-report
+
+========== 9. RESUMEN ==========
+Casos automatizados encontrados: 3 de 3
+Compilacion TypeScript: CORRECTO
+Deteccion Playwright: DETECCION CORRECTA
+
+IMPORTANTE:
+No se ejecutaron pruebas funcionales.
+No se generaron resultados PASS o FAIL.
+Las evidencias corresponden al diagnostico tecnico.
+**********************
+Fin de la transcripción de Windows PowerShell
+Hora de finalización: 20261114101034
+**********************
